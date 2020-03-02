@@ -4,6 +4,7 @@ from datacenter.models import Mark
 from datacenter.models import Chastisement
 from datacenter.models import Lesson
 from datacenter.models import Commendation
+from datacenter.models import Subject
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 
@@ -26,16 +27,16 @@ def fix_marks(schoolkid):
 def remove_chastisements(schoolkid):
     chastisements=Chastisement.objects.filter(schoolkid=schoolkid)
     for chastisement in chastisements:
-    	chastisement.delete()
-        #Chastisement.objects.get(id=chastisement.id).delete()      
+        chastisement.delete()
 
 Commendations=['Молодец!','Отлично!', 'Хорошо!', 'Гораздо лучше, чем я ожидал!', 'Ты меня приятно удивил!', 'Великолепно!', 'Прекрасно!', 'Ты меня очень обрадовал!', 'Именно этого я давно ждал от тебя!', 'Сказано здорово – просто и ясно!', 'Ты, как всегда, точен!', 'Очень хороший ответ!', 'Талантливо!', 'Ты сегодня прыгнул выше головы!', 'Я поражен!', 'Уже существенно лучше!', 'Потрясающе!', 'Замечательно!', 'Прекрасное начало!', 'Так держать!', 'Ты на верном пути!', 'Здорово!', 'Это как раз то, что нужно!', 'Я тобой горжусь!', 'С каждым разом у тебя получается всё лучше!', 'Мы с тобой не зря поработали!', 'Я вижу, как ты стараешься!', 'Ты растешь над собой!', 'Ты многое сделал, я это вижу!', 'Теперь у тебя точно все получится!']
 
 def create_commendation(schoolkid, subject_title):
     try:
-        lesson=Lesson.objects.get(id=(Lesson.objects.filter(subject__title=subject_title, year_of_study=schoolkid.year_of_study, group_letter=schoolkid.group_letter).order_by('-date').first()).id)
+        subject=Subject.objects.get(title__contains=subject_title, year_of_study=schoolkid.year_of_study)
+        lesson=Lesson.objects.filter(subject__title=subject.title, year_of_study=schoolkid.year_of_study, group_letter=schoolkid.group_letter).order_by('-date')[0]
         Commendation.objects.create(text=random.choice(Commendations), created=lesson.date, schoolkid=schoolkid, subject=lesson.subject, teacher=lesson.teacher)
     except ObjectDoesNotExist:
-        print("Не найден ученик или предмет")
+        print("Не найден предмет")
     except MultipleObjectsReturned:
-        print("Найдено несколько результатов. Конкретизируйте запрос.")
+        print("Найдено несколько предметов. Конкретизируйте запрос.")
